@@ -22,11 +22,10 @@ class RtpPacket:
 		header[2] = seqnum & 0xff
 		header[3] = (seqnum >> 8) & 0xff
   
-		ts = time
-		header[4] = ts & 0xff
-		header[5] = (ts >> 8) & 0xff
-		header[6] = (ts >> 16) & 0xff
-		header[7] = (ts >> 24) & 0xff
+		header[4] = timestamp & 0xff
+		header[5] = (timestamp >> 8) & 0xff
+		header[6] = (timestamp >> 16) & 0xff
+		header[7] = (timestamp >> 24) & 0xff
   
 		header[8] = ssrc & 0xff
 		header[9] = (ssrc >> 8) & 0xff

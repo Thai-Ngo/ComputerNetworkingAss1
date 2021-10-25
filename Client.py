@@ -98,12 +98,13 @@ class Client:
 	def listenRtp(self):		
 		"""Listen for RTP packets."""
 		#TODO
-		print("\nListening\n")
 		while True:
 			try:
 				data, addr = self.rtpSocket.recvfrom(20480)	
 				if data:
-					print(data)
+					rtpPacket = RtpPacket()
+					rtpPacket.decode(data)
+					self.updateMovie(self.writeFrame(rtpPacket.getPayload()))
 			except:
 				if self.event.isSet():
 					break
@@ -111,15 +112,24 @@ class Client:
 					self.rtpSocket.close()
 					self.teardownAcked = 0
 					break
+		print("Thread end")
 		
 					
 	def writeFrame(self, data):
 		"""Write the received frame to a temp image file. Return the image file."""
 	#TODO
-	
+		cachefile = CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT
+		f = open(cachefile, "wb")
+		f.write(data)
+		f.close()
+		return cachefile
+
 	def updateMovie(self, imageFile):
 		"""Update the image file as video frame in the GUI."""
 	#TODO
+		photo = ImageTk.PhotoImage(Image.open(imageFile))
+		self.label.configure(image = photo, height=300)
+		self.label.image = photo
 		
 	def connectToServer(self):
 		"""Connect to the Server. Start a new RTSP/TCP session."""
@@ -137,7 +147,6 @@ class Client:
 		if (requestCode == self.SETUP):
 			listener = threading.Thread(target=self.recvRtspReply) 
 			listener.start()
-   
 			self.rtspSeq = 1
 			data = 'SETUP ' + self.fileName + ' RTSP/1.0\nCSeq: ' + str(self.rtspSeq) + '\nTransport: RTP/UDP; client_port= ' + str(self.rtpPort)  
 		elif (requestCode == self.PLAY):
@@ -172,6 +181,7 @@ class Client:
 					elif (self.requestSent == self.TEARDOWN):
 						self.state = self.INIT
 						self.teardownAcked = 1
+		print("End")
 
 	
 	def parseRtspReply(self, data):
@@ -202,8 +212,8 @@ class Client:
 		self.rtpSocket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 		self.rtpSocket.settimeout(0.5)
 		try:
-			self.rtpSocket.bind((self.serverAddr, self.rtpPort))
-			print(self.serverAddr, self.rtpPort)
+			self.rtpSocket.bind(('', self.rtpPort))
+			print(self.rtpPort)
 			print("\nConnection Success\n")
 		except:
 			print("\nConnection Error\n")
@@ -214,4 +224,6 @@ class Client:
 		#TODO
 		self.exitClient()
 		self.clientSocket.close()
+		cachefile = CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT
+		os.remove(cachefile)
 		exit()

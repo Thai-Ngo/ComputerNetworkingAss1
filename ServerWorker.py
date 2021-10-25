@@ -1,5 +1,6 @@
 from random import randint
 import sys, traceback, threading, socket
+from tkinter import Message
 
 from VideoStream import VideoStream
 from RtpPacket import RtpPacket
@@ -123,7 +124,6 @@ class ServerWorker:
 				try:
 					address = self.clientInfo['rtspSocket'][1][0]
 					port = int(self.clientInfo['rtpPort'])
-					print(address, " ", port)
 					self.clientInfo['rtpSocket'].sendto(self.makeRtp(data, frameNumber), (address, port))
 				except:
 					print("Connection Error")
