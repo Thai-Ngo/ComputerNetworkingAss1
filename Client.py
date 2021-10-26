@@ -118,20 +118,21 @@ class Client:
    
 	def describeMovie(self):
 		"""Describe button handler."""
-		if (self.state == self.READY):
-			self.sendRtspRequest(self.DESCRIBE)
+		self.sendRtspRequest(self.DESCRIBE)
 	
 	def exitClient(self):
 		"""Teardown button handler."""
 	#TODO
 		if (self.state != self.INIT):
 			self.sendRtspRequest(self.TEARDOWN)
+			self.event.set()
 
 	def pauseMovie(self):
 		"""Pause button handler."""
 	#TODO
 		if (self.state == self.PLAYING):
 			self.sendRtspRequest(self.PAUSE)
+			self.event.set()
 	
 	def playMovie(self):
 		"""Play button handler."""
@@ -194,14 +195,14 @@ class Client:
 				if self.teardownAcked == 1:
 					self.rtpSocket.close()
 					self.teardownAcked = 0
-					time.sleep(0.5)
+					self.lostPacket = 0
+					self.receivePacket = 0
+					self.frameNbr = 0
+					self.totalDataReiceive = 0
+					self.counter = 0
 					break
  
-		self.lostPacket = 0
-		self.receivePacket = 0
-		self.frameNbr = 0
-		self.totalDataReiceive = 0
-		self.counter = 0
+
 		print("--------------------")
 		print("END RTP THREAD\n")
 	
@@ -274,7 +275,7 @@ class Client:
 						print("receive PLAY\n")
 						self.state = self.PLAYING
 					elif (self.requestSent == self.PAUSE):
-						print("receive READY\n")
+						print("receive PAUSE\n")
 						self.state = self.READY
 					elif (self.requestSent == self.TEARDOWN):
 						print("receive TEARDOWN\n")
@@ -282,6 +283,7 @@ class Client:
 						self.teardownAcked = 1
 					elif (self.requestSent == self.DESCRIBE):
 						print("receive DESCRIBE\n")
+						self.pauseMovie()
 						self.annouce(data)
 						
 		print("--------------------")

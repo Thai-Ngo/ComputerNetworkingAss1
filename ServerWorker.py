@@ -112,7 +112,7 @@ class ServerWorker:
 
 		elif requestType == self.DESCRIBE:
 			print("processing DESCRIBE\n")
-			data = "\nProtocol: Real Time Streaming Protocol (RTSP)\nEncoding: MJPEG (26)"
+			data = "\nProtocol: RTSP/UDP\nEncoding: MJPEG (26)"
 			self.replyRtsp(self.OK_200, seq[1], data)
 			
 	def sendRtp(self):
