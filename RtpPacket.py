@@ -17,20 +17,20 @@ class RtpPacket:
 		#--------------
 		# Fill the header bytearray with RTP header fields
 		
-		header[0] = (version & 0x03) | ((padding << 2) & 0x04) | ((extension << 3) & 0x08) | ((cc << 4) & 0xf0)
-		header[1] = (marker & 0x01)  | ((pt << 1) & 0xfe)
-		header[2] = seqnum & 0xff
-		header[3] = (seqnum >> 8) & 0xff
+		header[0] = ((version << 6) & 0xc0) | ((padding << 5) & 0x20) | ((extension << 4) & 0x10) | (cc & 0x0f)
+		header[1] = ((marker << 7) & 0x80)  | (pt & 0x7f)
+		header[2] = (seqnum >> 8) & 0xff
+		header[3] = seqnum & 0xff
   
-		header[4] = timestamp & 0xff
-		header[5] = (timestamp >> 8) & 0xff
-		header[6] = (timestamp >> 16) & 0xff
-		header[7] = (timestamp >> 24) & 0xff
+		header[4] = (timestamp >> 24) & 0xff
+		header[5] = (timestamp >> 16) & 0xff
+		header[6] = (timestamp >> 8) & 0xff
+		header[7] = timestamp & 0xff
   
-		header[8] = ssrc & 0xff
-		header[9] = (ssrc >> 8) & 0xff
-		header[10] = (ssrc >> 16) & 0xff
-		header[11] = (ssrc >> 24) & 0xff
+		header[8] = (ssrc >> 24) & 0xff
+		header[9] = (ssrc >> 16) & 0xff
+		header[10] = (ssrc >> 8) & 0xff
+		header[11] = ssrc & 0xff
 		
 		# Get the payload from the argument
 		# self.payload = ...
