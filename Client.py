@@ -37,11 +37,13 @@ class Client:
 		self.packetLossRate = StringVar()
 		self.videoDataRate = StringVar()
 		self.fps = StringVar()
-  		# self.fps.set("FPS: 0.00")
-		# self.videoDataRate.set("0.00kps")
+		self.packetLossRate.set("0.0%")
+		self.videoDataRate.set("0.00kps")
+		self.fps.set("0.00")
 		self.totalDataIn1Sec = 0
 		self.counter = 0
 		self.createWidgets()
+		self.playFlag = 0
 		# This attributes are used for the RTP packet
 		self.rtspSeq = 0
 		self.sessionId = 0
@@ -59,91 +61,186 @@ class Client:
 		# self.setup["text"] = "Setup"
 		# self.setup["command"] = self.setupMovie
 		# self.setup.grid(row=2, column=0, padx=2, pady=2)
-
-		# Create Describe button
-		self.describe = Button(self.master, width=20, padx=3, pady=3)
-		self.describe["text"] = "Describe"
-		self.describe["command"] = self.describeMovie
-		self.describe.grid(row=2, column=0, padx=2, pady=2)
   
-		# Create Play button		
-		self.start = Button(self.master, width=20, padx=3, pady=3)
-		self.start["text"] = "Play"
-		self.start["command"] = self.playMovie
-		self.start.grid(row=2, column=1, padx=2, pady=2)
-		
-		# Create Pause button			
-		self.pause = Button(self.master, width=20, padx=3, pady=3)
-		self.pause["text"] = "Pause"
-		self.pause["command"] = self.pauseMovie
-		self.pause.grid(row=2, column=2, padx=2, pady=2)
-	
-		# Create Teardown button
-		self.teardown = Button(self.master, width=20, padx=3, pady=3)
-		self.teardown["text"] = "Stop"
-		self.teardown["command"] =  self.exitClient
-		self.teardown.grid(row=2, column=3, padx=2, pady=2)
-		
-		# Create a label to display the movie
-		self.label = Label(self.master, height=19)
-		self.label.grid(row=1, column=0, columnspan=4, sticky=W+E+N+S, padx=5, pady=5) 
+		# Create Return button
+		self.home = Button(self.master, width=40, padx=0, pady=0, bg='white')
+		self.home["text"] = "Return"
+		# self.describe["command"] = self.describeMovie
+		self.home.grid(row=0, column=0, padx=2, pady=2)
+		homeButtonImage = ImageTk.PhotoImage(Image.open("Image/cancelButton.png").resize((40, 40)))
+		self.home.configure(image = homeButtonImage)
+		self.home.image = homeButtonImage
   
 		# Create a label to display movie's name
-		self.title = Label(self.master, height=2, text=self.fileName)
-		self.title.grid(row=0, column=1, columnspan=2, padx=2, pady=2)
+		self.mTitle = Label(self.master, height=2, text=self.fileName)
+		self.mTitle.grid(row=0, column=1, columnspan=7, padx=2, pady=2)
+  
+
+		# Create a label to display the movie
+		self.label = Label(self.master, height=17)
+		self.label.grid(row=1, column=0, columnspan=9, sticky=W+E+N+S, padx=5, pady=5) 
+
+		# Create a label to padding
+		self.temp_0 = Label(self.master, width=10)
+		self.temp_0.grid(row=2, column=0, columnspan=2,padx=3, pady=3) 
+		self.temp_1 = Label(self.master, width=10)
+		self.temp_1.grid(row=2, column=7, columnspan=2,padx=3, pady=3) 
+  
+		# Create Describe button
+		self.describe = Button(self.master, width=40, padx=3, pady=3, bg='white')
+		self.describe["text"] = "Describe"
+		self.describe["command"] = self.describeMovie
+		self.describe.grid(row=0, column=8, padx=2, pady=2)
+		describeButtonImage = ImageTk.PhotoImage(Image.open("Image/infoButton.png").resize((40, 40)))
+		self.describe.configure(image = describeButtonImage)
+		self.describe.image = describeButtonImage
+  
+		# Create Reset button
+		self.reset = Button(self.master, width=50, padx=3, pady=3, bg='white')
+		self.reset["text"] = "Reset"
+		self.reset["command"] = self.resetMovie
+		self.reset.grid(row=2, column=2, padx=2, pady=2)
+		resetButtonImage = ImageTk.PhotoImage(Image.open("Image/resetButton.png").resize((50, 50)))
+		self.reset.configure(image = resetButtonImage)
+		self.reset.image = resetButtonImage
+  
+		# Create Backward button		
+		self.backward = Button(self.master, width=50, padx=3, pady=3, bg='white')
+		self.backward["text"] = "Backward"
+		#self.start["command"] = self.backwardMovie
+		self.backward.grid(row=2, column=3, padx=2, pady=2)
+		backwardButtonImage = ImageTk.PhotoImage(Image.open("Image/backwardButton.png").resize((50, 50)))
+		self.backward.configure(image = backwardButtonImage)
+		self.backward.image = backwardButtonImage
+  
+		# # Create Play button		
+		# self.start = Button(self.master, width=60, padx=3, pady=3, bg='white')
+		# self.start["text"] = "Play"
+		# self.start["command"] = self.playMovie
+		# self.start.grid(row=3, column=4, padx=2, pady=2)
+		# startButtonImage = ImageTk.PhotoImage(Image.open("Image/playButton.png").resize((60, 60)))
+		# self.start.configure(image = startButtonImage)
+		# self.start.image = startButtonImage
+		
+		# # Create Pause button			
+		# self.pause = Button(self.master, width=60, padx=3, pady=3, bg='white')
+		# self.pause["text"] = "Pause"
+		# self.pause["command"] = self.pauseMovie
+		# self.pause.grid(row=4, column=4, padx=2, pady=2)
+		# pauseButtonImage = ImageTk.PhotoImage(Image.open("Image/pauseButton.png").resize((60, 60)))
+		# self.pause.configure(image = pauseButtonImage)
+		# self.pause.image = pauseButtonImage
+  
+  		# Create Play/Pause button		
+		self.start = Button(self.master, width=50, padx=3, pady=3, bg='white')
+		self.start["text"] = "Play/Pause"
+		self.start["command"] = self.playMovie
+		self.start.grid(row=2, column=4, padx=2, pady=2)
+		startButtonImage = ImageTk.PhotoImage(Image.open("Image/playButton.png").resize((50, 50)))
+		self.start.configure(image = startButtonImage)
+		self.start.image = startButtonImage
+
+		# Create Forward button		
+		self.forward = Button(self.master, width=50, padx=3, pady=3, bg='white')
+		self.forward["text"] = "Forward"
+		#self.start["command"] = self.forwardMovie
+		self.forward.grid(row=2, column=5, padx=2, pady=2)
+		forwardButtonImage = ImageTk.PhotoImage(Image.open("Image/forwardButton.png").resize((50, 50)))
+		self.forward.configure(image = forwardButtonImage)
+		self.forward.image = forwardButtonImage
+  
+		# Create Teardown button
+		self.teardown = Button(self.master, width=50, padx=3, pady=3, bg='white')
+		self.teardown["text"] = "Stop"
+		self.teardown["command"] =  self.exitClient
+		self.teardown.grid(row=2, column=6, padx=4, pady=4)
+		stopButtonImage = ImageTk.PhotoImage(Image.open("Image/stopButton.png").resize((50, 50)))
+		self.teardown.configure(image = stopButtonImage)
+		self.teardown.image = stopButtonImage
+	
   
 		# Create a label to display the packet loss rate
-		self.lTitle = Label(self.master, height=2, text="Packet loss rate")
-		self.lTitle.grid(row=3, column=0, padx=2, pady=2)
+		self.lTitle = LabelFrame(self.master, height=1, text="Packet loss rate")
+		self.lTitle.grid(row=3, column=0, columnspan=3, padx=3, pady=3)
   
-		self.lossRate = Label(self.master, height=2, textvariable=self.packetLossRate)
-		self.lossRate.grid(row=3, column=1, padx=2, pady=2)
+		self.lossRateLabel = Label(self.lTitle, height=1, textvariable=self.packetLossRate)
+		self.lossRateLabel.grid(row=0, column=0, columnspan=3, padx=3, pady=3)
   
 		# Create a label to display the video data rate
-		self.vTitle = Label(self.master, height=2, text="Video data rate")
-		self.vTitle.grid(row=3, column=2, padx=2, pady=2)
+		self.vTitle = LabelFrame(self.master, height=1, text="Video data rate")
+		self.vTitle.grid(row=3, column=3, columnspan=3,padx=3, pady=3)
   
-		self.dataRate = Label(self.master, height=2, textvariable=self.videoDataRate)
-		self.dataRate.grid(row=3, column=3, padx=2, pady=2)
+		self.dataRateLabel = Label(self.vTitle, height=1, textvariable=self.videoDataRate)
+		self.dataRateLabel.grid(row=0, column=0, columnspan=3, padx=3, pady=3)
   
-		# Create a label to display the video FPS
-		self.fTitle = Label(self.master, height=2, textvariable=self.fps)
-		self.fTitle.grid(row=0, column=0, padx=2, pady=2)
+  		# Create a label to display the video FPS
+		self.vTitle = LabelFrame(self.master, height=30, width=200, text="FPS")
+		self.vTitle.grid(row=3, column=6, columnspan=3,padx=3, pady=3)
+    
+		self.fpsLabel = Label(self.vTitle, height=1, textvariable=self.fps)
+		self.fpsLabel.grid(row=0, column=1, padx=2, pady=2)
+  
 
 	def setupMovie(self):
 		"""Setup button handler."""
 	#TODO
+		self.teardownAcked = 0
 		if (self.state == self.INIT):
 			self.sendRtspRequest(self.SETUP)
    
 	def describeMovie(self):
 		"""Describe button handler."""
-		self.sendRtspRequest(self.DESCRIBE)
+		if (self.state != self.INIT):
+			self.sendRtspRequest(self.DESCRIBE)
 	
 	def exitClient(self):
 		"""Teardown button handler."""
 	#TODO
 		if (self.state != self.INIT):
+			self.start["command"] = self.playMovie
+			startButtonImage = ImageTk.PhotoImage(Image.open("Image/playButton.png").resize((50, 50)))
+			self.start.configure(image = startButtonImage)
+			self.start.image = startButtonImage
+      
 			self.sendRtspRequest(self.TEARDOWN)
-			self.event.set()
+			if (self.playFlag == 1):
+				self.event.set()
 
 	def pauseMovie(self):
 		"""Pause button handler."""
 	#TODO
+
 		if (self.state == self.PLAYING):
+			self.start["command"] = self.playMovie
+			startButtonImage = ImageTk.PhotoImage(Image.open("Image/playButton.png").resize((50, 50)))
+			self.start.configure(image = startButtonImage)
+			self.start.image = startButtonImage
+   
 			self.sendRtspRequest(self.PAUSE)
 			self.event.set()
 	
 	def playMovie(self):
 		"""Play button handler."""
-	#TODO
+	#TODO	
 		self.cachefile = CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT
+		self.playFlag = 1
   
 		if (self.state == self.READY):
+			self.start["command"] = self.pauseMovie
+			startButtonImage = ImageTk.PhotoImage(Image.open("Image/pauseButton.png").resize((50, 50)))
+			self.start.configure(image = startButtonImage)
+			self.start.image = startButtonImage
+      
 			self.event = threading.Event()
 			self.event.clear()
 			threading.Thread(target=self.listenRtp).start()
 			self.sendRtspRequest(self.PLAY)
+   
+	def resetMovie(self):
+		"""Reset button handler."""  
+		if (self.state != self.READY):
+			threading.Thread(target=self.autoPlay).start()
+			
 	
 	def listenRtp(self):		
 		"""Listen for RTP packets."""
@@ -181,16 +278,18 @@ class Client:
 					self.counter += 1
 					
 					if (currTime - self.time > 1.0) :		
-						dataRate = self.totalDataIn1Sec / (currTime - self.time) * 8 / 1024
+						dataRate = self.totalDataIn1Sec * 8 / (1024 * (currTime - self.time)) 
 						fps = self.counter / (currTime - self.time)
 						self.videoDataRate.set(str(round(dataRate, 2)) + "kps")
-						self.fps.set("FPS: " + str(round(fps, 2)))
+						self.fps.set(str(round(fps, 2)))
 						self.time = currTime
 						self.totalDataIn1Sec = 0
 						self.counter = 0
 
 			except:
 				if self.event.isSet():
+					self.totalDataIn1Sec = 0
+					self.counter = 0
 					break
 				if self.teardownAcked == 1:
 					self.rtpSocket.close()
@@ -198,7 +297,7 @@ class Client:
 					self.lostPacket = 0
 					self.receivePacket = 0
 					self.frameNbr = 0
-					self.totalDataReiceive = 0
+					self.totalDataIn1Sec = 0
 					self.counter = 0
 					break
  
@@ -208,7 +307,23 @@ class Client:
 	
 	def annouce(self, data):
 		tkinter.messagebox.showinfo(title="Session description", message=data)
- 
+
+	def autoPlay(self):
+		if (self.state == self.PLAYING):
+			self.exitClient()
+   
+			while self.state != self.INIT:
+				pass
+			time.sleep(0.5)
+   
+		print("Continue play")
+      
+		self.setupMovie()
+  
+		while self.state != self.READY:
+			pass
+		self.playMovie()
+	
 	def writeFrame(self, data):
 		"""Write the received frame to a temp image file. Return the image file."""
 	#TODO
@@ -221,7 +336,7 @@ class Client:
 		"""Update the image file as video frame in the GUI."""
 	#TODO
 		photo = ImageTk.PhotoImage(Image.open(imageFile))
-		self.label.configure(image = photo, height=300)
+		self.label.configure(image = photo, height=290)
 		self.label.image = photo
 		
 	def connectToServer(self):
@@ -269,8 +384,8 @@ class Client:
 				if (status == 200):
 					if (self.requestSent == self.SETUP):
 						print("receive SETUP\n")
-						self.state = self.READY
 						self.openRtpPort()
+						self.state = self.READY
 					elif (self.requestSent == self.PLAY):
 						print("receive PLAY\n")
 						self.state = self.PLAYING
@@ -333,7 +448,12 @@ class Client:
 		#TODO
 		self.exitClient()
 		self.clientSocket.close()
-		if self.cachefile != '':
-			os.remove(self.cachefile)
+
+		folder = "Cache"
+		for path in os.listdir(folder):
+			fullPath = os.path.join(folder, path)
+			if os.path.isfile(fullPath):
+				os.remove(fullPath)
+
 		time.sleep(1)
 		exit()
