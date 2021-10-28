@@ -107,7 +107,7 @@ class Client:
 		# Create Backward button		
 		self.backward = Button(self.master, width=50, padx=3, pady=3, bg='white')
 		self.backward["text"] = "Backward"
-		#self.start["command"] = self.backwardMovie
+		self.backward["command"] = self.backwardMovie
 		self.backward.grid(row=2, column=3, padx=2, pady=2)
 		backwardButtonImage = ImageTk.PhotoImage(Image.open("Image/backwardButton.png").resize((50, 50)))
 		self.backward.configure(image = backwardButtonImage)
@@ -143,7 +143,7 @@ class Client:
 		# Create Forward button		
 		self.forward = Button(self.master, width=50, padx=3, pady=3, bg='white')
 		self.forward["text"] = "Forward"
-		#self.start["command"] = self.forwardMovie
+		self.forward["command"] = self.forwardMovie
 		self.forward.grid(row=2, column=5, padx=2, pady=2)
 		forwardButtonImage = ImageTk.PhotoImage(Image.open("Image/forwardButton.png").resize((50, 50)))
 		self.forward.configure(image = forwardButtonImage)
@@ -185,6 +185,7 @@ class Client:
 		"""Setup button handler."""
 	#TODO
 		self.teardownAcked = 0
+		self.frameNbr = 0
 		if (self.state == self.INIT):
 			self.sendRtspRequest(self.SETUP)
    
@@ -235,11 +236,62 @@ class Client:
 			self.event.clear()
 			threading.Thread(target=self.listenRtp).start()
 			self.sendRtspRequest(self.PLAY)
+	
+	def backwardMovie(self):
+		"""Backward button handler""" 
+		if (self.state != self.INIT and self.playFlag == 1):
+			self.pauseMovie()
+			threading.Thread(target=self.backwardProcess).start()
+
+	def backwardProcess(self):
+		"""Backward process"""
+		while self.state != self.READY:
+			pass
+		time.sleep(0.2)
+		self.frameNbr -= 20
+		if (self.frameNbr < 0):
+			self.frameNbr = 0
+		self.playMovie()
+		print("------------------")
+		print("END BACKWARD")
+  
+	def forwardMovie(self):
+		"""Forward button handler"""
+		if (self.state != self.INIT and self.playFlag == 1):
+			self.pauseMovie()
+			threading.Thread(target=self.forwardProcess).start()
+   
+	def forwardProcess(self):
+		"""Forward process"""
+		while self.state != self.READY:
+			pass
+		time.sleep(0.2)
+		self.frameNbr += 20
+		self.playMovie()
+		print("-----------------")
+		print("END FORWARD")
    
 	def resetMovie(self):
 		"""Reset button handler."""  
 		if (self.state != self.READY):
-			threading.Thread(target=self.autoPlay).start()
+			threading.Thread(target=self.autoPlayProcess).start()
+
+	def autoPlayProcess(self):
+		if (self.state == self.PLAYING):
+			self.exitClient()
+   
+		while self.state != self.INIT:
+			pass
+		time.sleep(0.5)
+      
+		self.setupMovie()
+  
+		while self.state != self.READY:
+			pass
+		self.playMovie()
+  
+		print("------------------")
+		print("END AUTOPLAY")
 			
 	
 	def listenRtp(self):		
@@ -267,7 +319,7 @@ class Client:
 							print("Lost", diff, "packets")
        
 					self.receivePacket += 1	
-					print("Receive packer number", self.frameNbr - 1)
+					print("Receive packer number", self.frameNbr)
 						
 					lostRate = float(self.lostPacket) / (self.lostPacket + self.receivePacket) * 100
 					self.packetLossRate.set(str(round(lostRate, 2)) + "%")
@@ -307,22 +359,6 @@ class Client:
 	
 	def annouce(self, data):
 		tkinter.messagebox.showinfo(title="Session description", message=data)
-
-	def autoPlay(self):
-		if (self.state == self.PLAYING):
-			self.exitClient()
-   
-			while self.state != self.INIT:
-				pass
-			time.sleep(0.5)
-   
-		print("Continue play")
-      
-		self.setupMovie()
-  
-		while self.state != self.READY:
-			pass
-		self.playMovie()
 	
 	def writeFrame(self, data):
 		"""Write the received frame to a temp image file. Return the image file."""
@@ -359,7 +395,7 @@ class Client:
 			data = 'SETUP ' + self.fileName + ' RTSP/1.0\nCSeq: ' + str(self.rtspSeq) + '\nTransport: RTP/UDP; client_port= ' + str(self.rtpPort)  
 		elif (requestCode == self.PLAY):
 			self.rtspSeq += 1
-			data = 'PLAY ' + self.fileName + ' RTSP/1.0\nCSeq: ' + str(self.rtspSeq) + '\nSession: ' + str(self.sessionId) 
+			data = 'PLAY ' + self.fileName + ' RTSP/1.0\nCSeq: ' + str(self.rtspSeq) + '\nSession: ' + str(self.sessionId) + '\nStartpoint: ' + str(self.frameNbr)
 		elif (requestCode == self.PAUSE):
 			self.rtspSeq += 1
 			data = 'PAUSE ' + self.fileName + ' RTSP/1.0\nCSeq: ' + str(self.rtspSeq) + '\nSession: ' + str(self.sessionId) 
@@ -401,6 +437,7 @@ class Client:
 						self.pauseMovie()
 						self.annouce(data)
 						
+		time.sleep(0.5)
 		print("--------------------")
 		print("END LISTENING READ\n")
 	
@@ -447,7 +484,6 @@ class Client:
 		"""Handler on explicitly closing the GUI window."""
 		#TODO
 		self.exitClient()
-		self.clientSocket.close()
 
 		folder = "Cache"
 		for path in os.listdir(folder):
@@ -456,4 +492,5 @@ class Client:
 				os.remove(fullPath)
 
 		time.sleep(1)
+		self.clientSocket.close()
 		exit()
