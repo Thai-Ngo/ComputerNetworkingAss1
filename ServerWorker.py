@@ -84,7 +84,13 @@ class ServerWorker:
 				
 				self.replyRtsp(self.OK_200, seq[1], '')
 				
+				line4 = request[3].split(' ') 
+				startPoint = int(line4[1])
 				# Create a new thread and start sending RTP packets
+				if (startPoint >= self.clientInfo['videoStream'].totalFrame):
+					startPoint = self.clientInfo['videoStream'].totalFrame - 1
+     
+				self.clientInfo['videoStream'].setFramePoint(startPoint)
 				self.clientInfo['event'] = threading.Event()
 				self.clientInfo['worker']= threading.Thread(target=self.sendRtp) 
 				self.clientInfo['worker'].start()
@@ -123,7 +129,7 @@ class ServerWorker:
 			# Stop sending if request is PAUSE or TEARDOWN
 			if self.clientInfo['event'].isSet(): 
 				break 
-				
+			
 			data = self.clientInfo['videoStream'].nextFrame()
 			
 			if data: 
